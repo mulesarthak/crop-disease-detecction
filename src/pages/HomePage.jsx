@@ -10,6 +10,31 @@ export default function HomePage() {
   const [result, setResult] = useState(null)
   const [apiError, setApiError] = useState('')
 
+  const SUGGESTIONS = {
+    Healthy: ['No action needed', 'Monitor plant regularly', 'Maintain proper nutrition'],
+    'Bacterial Blight': [
+      'Remove and destroy infected leaves',
+      'Use copper-based bactericide as directed',
+      'Avoid overhead irrigation',
+    ],
+    'Curl Virus': [
+      'Control vector insects (e.g., whiteflies)',
+      'Remove heavily infected plants',
+      'Use virus-free planting material',
+    ],
+    'Fusarium Wilt': [
+      'Improve soil drainage',
+      'Rotate with non-host crops',
+      'Use resistant varieties',
+      'Disinfect tools regularly',
+    ],
+    Default: [
+      'Isolate infected plants',
+      'Improve field hygiene and sanitation',
+      'Avoid wetting foliage when watering',
+    ],
+  }
+
   const previewUrl = useMemo(() => {
     if (!selectedFile) return ''
     return URL.createObjectURL(selectedFile)
@@ -81,7 +106,7 @@ export default function HomePage() {
               CD
             </div>
             <div className="brand__text">
-              <div className="brand__title">Crop Disease Detection</div>
+              <div className="brand__title">Cotton Disease Detection</div>
               <div className="brand__subtitle">Leaf image-based screening</div>
             </div>
           </div>
@@ -95,10 +120,10 @@ export default function HomePage() {
       <main className="homepage__container homepage__main">
         <section className="heroGrid">
           <div className="hero">
-            <h1 className="hero__title">Detect crop diseases early with a leaf photo</h1>
+            <h1 className="hero__title">Detect cotton diseases early with a leaf photo</h1>
             <p className="hero__subtitle">
-              Upload a clear image of a leaf to get an instant screening. This is a landing page UI —
-              you can connect the "Analyze" button to your model/API next.
+              {/* Upload a clear image of a leaf to get an instant screening. This is a landing page UI —
+              you can connect the "Analyze" button to your model/API next. */}
             </p>
 
             <div className="featureGrid">
@@ -176,7 +201,10 @@ export default function HomePage() {
                     </div>
                     <div className="fileMeta">
                       <div className="fileMeta__name">{selectedFile.name}</div>
-                      <div className="fileMeta__hint">Click to replace the image</div>
+                      <div className="fileMeta__hint">
+                        Click to replace the image •{' '}
+                        <a href={previewUrl} target="_blank" rel="noreferrer">View full size</a>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -212,17 +240,15 @@ export default function HomePage() {
 
               <div className="featureGrid">
                 <div className="featureCard">
-                  <div className="featureCard__title">Status</div>
-                  <div className="featureCard__text">{loading ? 'Analyzing…' : 'Complete'}</div>
+                  <div className="featureCard__title">Disease</div>
+                  <div className="featureCard__text analysis__value analysis__value--disease">
+                    {loading ? 'Analyzing…' : result ? result.disease : '—'}
+                  </div>
                 </div>
                 <div className="featureCard">
-                  <div className="featureCard__title">Prediction</div>
-                  <div className="featureCard__text">{result ? result.disease : '—'}</div>
-                </div>
-                <div className="featureCard">
-                  <div className="featureCard__title">Confidence</div>
-                  <div className="featureCard__text">
-                    {result ? `${Math.round(result.confidence * 100)}%` : '—'}
+                  <div className="featureCard__title">Accuracy</div>
+                  <div className="featureCard__text analysis__value analysis__value--confidence">
+                    {result ? `${(result.confidence * 100).toFixed(2)}%` : '—'}
                   </div>
                 </div>
               </div>
@@ -233,7 +259,16 @@ export default function HomePage() {
                 <div style={{ marginTop: '1rem' }}>
                   <div className="featureCard">
                     <div className="featureCard__title">Suggested Actions</div>
-                    <div className="featureCard__text">{result.recommendations.join(' • ')}</div>
+                    <div className="featureCard__text">
+                      <ul className="analysis__list">
+                        {(result.recommendations && result.recommendations.length
+                          ? result.recommendations
+                          : SUGGESTIONS[result.disease] || SUGGESTIONS.Default
+                        ).map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               ) : null}
@@ -272,7 +307,14 @@ export default function HomePage() {
               </div>
               <div className="fileMeta">
                 <div className="fileMeta__name">{selectedFile?.name ?? 'No image selected'}</div>
-                <div className="fileMeta__hint">{loading ? 'Processing…' : 'Analysis summary shown on the left'}</div>
+                <div className="fileMeta__hint">
+                  {loading ? 'Processing…' : 'Analysis summary shown on the left'}{' '}
+                  {previewUrl ? (
+                    <>
+                      • <a href={previewUrl} target="_blank" rel="noreferrer">View full size</a>
+                    </>
+                  ) : null}
+                </div>
               </div>
             </section>
           </section>

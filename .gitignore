@@ -8,9 +8,16 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.venv
 dist
 dist-ssr
 *.local
+
+# Model files
+server/model/*.h5
+server/model/*.pt
+server/model/*.pth
+server/model/*.onnx
 
 # Env files
 .env

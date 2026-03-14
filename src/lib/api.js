@@ -32,6 +32,15 @@ export async function predict(file) {
   if (!Number.isFinite(confidence)) {
     confidence = 0
   }
+  if (confidence > 1) {
+    confidence = confidence / 100
+  }
+  if (confidence < 0) {
+    confidence = 0
+  }
+  if (confidence > 1) {
+    confidence = 1
+  }
   let recommendations =
     data.recommendations ??
     data.remedies ??
