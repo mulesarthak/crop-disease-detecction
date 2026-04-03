@@ -13,8 +13,14 @@ except Exception:
     pass
 
 # Load model
-model = load_model("model/cotton_baseline_model.h5")
-print("Model Loaded Successfully")
+model_path = os.environ.get("MODEL_PATH", "model/global_model.h5")
+try:
+    print(f"Loading model from {model_path}...")
+    model = load_model(model_path)
+    print("Model Loaded Successfully")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    model = None
 
 labels_path = os.environ.get("CLASS_LABELS_PATH", "model/labels.txt")
 indices_path = os.environ.get("CLASS_INDICES_PATH", "model/class_indices.json")
@@ -53,8 +59,6 @@ app.add_middleware(
 def root():
     return {"status": "ok"}
 
-# API docs available at /docs
-
 # Prediction function
 IMG_SIZE = int(os.environ.get("IMG_SIZE", "224"))
 PREPROCESS = os.environ.get("PREPROCESS", "rescale_0_1").lower()
@@ -71,6 +75,8 @@ def preprocess(img_rgb):
     return x
 
 def predict_disease(img_bgr):
+    if model is None:
+        return "Model not loaded", 0.0
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
     x = preprocess(img_rgb)
     prediction = model.predict(x)
@@ -84,20 +90,20 @@ def predict_disease(img_bgr):
 # API endpoint
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-
     contents = await file.read()
-
     nparr = np.frombuffer(contents, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
     disease, conf = predict_disease(img)
-
     return {
         "disease": disease,
         "confidence": conf
     }
 
-
-# Run server
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    import sys
+    port = 8000
+    if "--port" in sys.argv:
+        idx = sys.argv.index("--port")
+        if idx + 1 < len(sys.argv):
+            port = int(sys.argv[idx + 1])
+    uvicorn.run(app, host="0.0.0.0", port=port)

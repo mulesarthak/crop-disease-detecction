@@ -7,14 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.venv
-dist
-dist-ssr
-*.local
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.env
 
 # Model files
-server/model/*.h5
 server/model/*.pt
 server/model/*.pth
 server/model/*.onnx
